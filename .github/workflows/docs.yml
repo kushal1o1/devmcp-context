@@ -36,7 +36,7 @@ jobs:
         run: uv venv
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --all-extras
 
       - name: Build docs
         run: uv run mkdocs build
