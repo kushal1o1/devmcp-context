@@ -1,26 +1,26 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from enum import Enum
+from datetime import UTC, datetime, timedelta
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, model_validator
 
 
-class Category(str, Enum):
+class Category(StrEnum):
     project = "project"
     decisions = "decisions"
     errors = "errors"
     tasks = "tasks"
-    ephemeral = "ephemeral"       # scratchpad temp data :)
+    ephemeral = "ephemeral"  # scratchpad temp data :)
 
 
 DEFAULT_TTL_DAYS: dict[Category, int | None] = {
-    Category.project: None,       # never expires
-    Category.decisions: None,     # never expires
-    Category.errors: 30,          # 30 days
-    Category.tasks: 14,           # 14 days
-    Category.ephemeral: 1,        # 1 day
+    Category.project: None,  # never expires
+    Category.decisions: None,  # never expires
+    Category.errors: 30,  # 30 days
+    Category.tasks: 14,  # 14 days
+    Category.ephemeral: 1,  # 1 day
 }
 
 CATEGORY_DESCRIPTIONS: dict[Category, str] = {
@@ -36,8 +36,8 @@ class ContextEntry(BaseModel):
     key: str = Field(..., description="Short unique identifier within category")
     value: str = Field(..., description="The actual content to remember")
     category: Category
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     ttl_days: int | None = Field(None, description="Days until expiry. None = never.")
     tags: list[str] = Field(default_factory=list)
     source: str = Field(default="agent", description="Who wrote this: agent | human")
@@ -45,12 +45,11 @@ class ContextEntry(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def set_default_ttl(cls, data: Any) -> Any:
-        if isinstance(data, dict):
-            if data.get("ttl_days") is None:
-                cat = data.get("category")
-                if cat:
-                    category = Category(cat) if isinstance(cat, str) else cat
-                    data["ttl_days"] = DEFAULT_TTL_DAYS.get(category)
+        if isinstance(data, dict) and data.get("ttl_days") is None:
+            cat = data.get("category")
+            if cat:
+                category = Category(cat) if isinstance(cat, str) else cat
+                data["ttl_days"] = DEFAULT_TTL_DAYS.get(category)
         return data
 
     @property
@@ -58,11 +57,11 @@ class ContextEntry(BaseModel):
         if self.ttl_days is None:
             return False
         expiry = self.updated_at + timedelta(days=self.ttl_days)
-        return datetime.now(timezone.utc) > expiry
+        return datetime.now(UTC) > expiry
 
     @property
     def age_days(self) -> int:
-        delta = datetime.now(timezone.utc) - self.updated_at
+        delta = datetime.now(UTC) - self.updated_at
         return delta.days
 
     def to_md_block(self) -> str:
