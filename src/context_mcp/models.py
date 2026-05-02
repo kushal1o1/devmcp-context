@@ -38,7 +38,7 @@ class ContextEntry(BaseModel):
     category: Category
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    ttl_days: int | None = Field(None, description="Days until expiry. None = never.")
+    ttl_days: int | None = Field(default=None, description="Days until expiry. None = never.")
     tags: list[str] = Field(default_factory=list)
     source: str = Field(default="agent", description="Who wrote this: agent | human")
 
