@@ -54,6 +54,8 @@ jobs:
     name: Create GitHub Release
     needs: publish-to-pypi
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
