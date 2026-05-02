@@ -1,10 +1,10 @@
-"""Tests for context_mcp.models module."""
+"""Tests for devmcp_context.models module."""
 
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from context_mcp.models import Category, CategoryFile, ContextEntry
+from devmcp_context.models import Category, CategoryFile, ContextEntry
 
 
 class TestCategory:

@@ -1,12 +1,12 @@
-"""Tests for context_mcp.storage module."""
+"""Tests for devmcp_context.storage module."""
 
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from context_mcp.models import Category, ContextEntry
-from context_mcp.storage import (
+from devmcp_context.models import Category, ContextEntry
+from devmcp_context.storage import (
     delete_entry,
     get_all_summaries,
     load_category,

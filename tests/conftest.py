@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from context_mcp.models import Category, ContextEntry
+from devmcp_context.models import Category, ContextEntry
 
 
 @pytest.fixture
