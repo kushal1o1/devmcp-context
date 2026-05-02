@@ -1,0 +1,44 @@
+site_name: context-mcp
+site_description: Structured AI memory layer for agents
+site_author: Kushal
+repo_url: https://github.com/kushal1o1/context-mcp
+repo_name: kushal1o1/context-mcp
+
+theme:
+  name: material
+  palette:
+    scheme: default
+    primary: black
+    accent: black
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+plugins:
+  - search
+  - offline
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Installation: installation.md
+  - Quick Start: quickstart.md
+  - Usage Guide: usage.md
+  - API Reference: api.md
+  - Memory Categories: categories.md
+  - Deployment: deployment.md
+  - Development: development.md
+  - Contributing: contributing.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+  - tables
+  - admonition
+  - attr_list
