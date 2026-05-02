@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "context-mcp"
+name = "devmcp-context"
 version = "0.1.0"
 description = "Structured AI memory layer — single source of truth for what your agent knows"
 readme = "README.md"
@@ -18,13 +18,15 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "ruff>=0.1.0",
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
 ]
 
 [project.scripts]
-context-mcp = "context_mcp.server:main"
+devmcp-context = "devmcp_context.server:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/context_mcp"]
+packages = ["src/devmcp_context"]
 
 [tool.ruff]
 line-length = 100
@@ -44,7 +46,7 @@ select = [
 ignore = ["E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["context_mcp"]
+known-first-party = ["devmcp_context"]
 
 [tool.ruff.format]
 quote-style = "double"
