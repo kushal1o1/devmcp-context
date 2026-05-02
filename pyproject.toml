@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "devmcp-context"
-version = "0.1.0"
+version = "0.1.1"
 description = "Structured AI memory layer — single source of truth for what your agent knows"
 readme = "README.md"
 requires-python = ">=3.12"
