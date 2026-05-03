@@ -1,23 +1,41 @@
-site_name: context-mcp
+site_name: devmcp-context
 site_description: Structured AI memory layer for agents
 site_author: Kushal
-site_url: https://kushal1o1.github.io/context-mcp/
-repo_url: https://github.com/kushal1o1/context-mcp
-repo_name: kushal1o1/context-mcp
+site_url: https://kushal1o1.github.io/devmcp-context/
+repo_url: https://github.com/kushal1o1/devmcp-context
+repo_name: devmcp-context
+copyright: Copyright © 2026 kushal1o1 | MIT License
 
 theme:
   name: material
   palette:
     scheme: default
     primary: black
-    accent: black
+    accent: indigo
   font:
     text: Roboto
     code: Roboto Mono
+  logo: assets/images/logo.png
+  favicon: assets/images/logo.png
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - content.code.copy
+    - content.tabs.link
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/kushal1o1/devmcp-context
+      name: GitHub
 
 plugins:
   - search
   - offline
+
+extra_css:
+  - stylesheets/extra.css
 
 nav:
   - Home: index.md
@@ -27,6 +45,7 @@ nav:
   - Usage Guide: usage.md
   - API Reference: api.md
   - Memory Categories: categories.md
+  - Architecture: architecture.md
   - Deployment: deployment.md
   - Development: development.md
   - Contributing: contributing.md
@@ -35,7 +54,11 @@ markdown_extensions:
   - pymdownx.highlight:
       use_pygments: true
   - pymdownx.inlinehilite
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - toc:
