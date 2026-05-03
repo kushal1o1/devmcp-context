@@ -17,6 +17,32 @@ your-project/
 
 Each `.md` file contains entries for that category in a human-readable format.
 
+```mermaid
+graph TB
+    Root["ai-context/<br/>(Your Project)"]
+    Project["project.md<br/>(Never expires)"]
+    Decisions["decisions.md<br/>(Never expires)"]
+    Errors["errors.md<br/>(30 days TTL)"]
+    Tasks["tasks.md<br/>(14 days TTL)"]
+    Ephemeral["ephemeral.md<br/>(1 day TTL)"]
+    Meta["_meta.md<br/>(Metadata)"]
+    
+    Root --> Project
+    Root --> Decisions
+    Root --> Errors
+    Root --> Tasks
+    Root --> Ephemeral
+    Root --> Meta
+    
+    style Root fill:#60a5fa,color:#0f172a
+    style Project fill:#e8e8ff
+    style Decisions fill:#e8e8ff
+    style Errors fill:#ffe8e8
+    style Tasks fill:#fff8e8
+    style Ephemeral fill:#f0e8ff
+    style Meta fill:#e8e8e8
+```
+
 ## Saving Entries
 
 ### Basic Save

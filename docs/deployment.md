@@ -1,21 +1,52 @@
 # Deployment Guide
 
-Integrate context-mcp with your agent for persistent memory across sessions.
+Integrate devmcp-context with your agent for persistent memory across sessions.
 
 ## How It Works
 
-When you configure context-mcp in Claude Desktop:
+When you configure devmcp-context in Claude Desktop:
 1. Claude reads the MCP server configuration from your config file
-2. When you start a chat, Claude **automatically starts** the context-mcp server
+2. When you start a chat, Claude **automatically starts** the devmcp-context server
 3. The server stays running while you chat
 4. When you close the chat or exit Claude, the server stops
 5. Next time you chat, it starts fresh with any previously saved memories
 
 **You don't manually run the server** — Claude handles startup and shutdown for you.
 
+```mermaid
+graph TB
+    subgraph Session1["Chat Session 1"]
+        C1["Claude Opens"]
+        S1["Server Starts"]
+        M1["Memories Available"]
+        C1 --> S1 --> M1
+    end
+    
+    subgraph Session2["Chat Session 2"]
+        C2["Claude Closes"]
+        S2["Server Stops"]
+        C2 --> S2
+    end
+    
+    subgraph Session3["Chat Session 3"]
+        C3["Claude Opens"]
+        S3["Server Starts<br/>(Fresh)"]
+        M2["Previous Memories<br/>Loaded from Disk"]
+        C3 --> S3 --> M2
+    end
+    
+    Session1 --> Session2 --> Session3
+    
+    style Session1 fill:#e8f0ff
+    style Session2 fill:#ffe8e8
+    style Session3 fill:#e8f0ff
+    style M1 fill:#e8ffe8
+    style M2 fill:#e8ffe8
+```
+
 ## For Claude Desktop Users
 
-If you haven't set up context-mcp with Claude yet, see [Getting Started](getting-started.md) for step-by-step instructions.
+If you haven't set up devmcp-context with Claude yet, see [Getting Started](getting-started.md) for step-by-step instructions.
 
 The rest of this guide covers advanced setups and production deployments.
 
@@ -24,8 +55,8 @@ The rest of this guide covers advanced setups and production deployments.
 For development or testing purposes, you can manually start the server:
 
 ```bash
-cd /path/to/context-mcp
-uv run context-mcp
+cd /path/to/devmcp-context
+uv run devmcp-context
 ```
 
 The server will initialize and create an `ai-context/` directory in the current working directory. All memory is stored here in Markdown files.
@@ -34,7 +65,7 @@ To use a custom location:
 
 ```bash
 cd /your/project/directory
-uv run context-mcp
+uv run devmcp-context
 ```
 
 Memory will be stored in `/your/project/directory/ai-context/`
@@ -43,16 +74,16 @@ Memory will be stored in `/your/project/directory/ai-context/`
 
 ### Claude Desktop (Recommended)
 
-This is the main way most users will integrate context-mcp. See [Getting Started](getting-started.md) for complete setup instructions.
+This is the main way most users will integrate devmcp-context. See [Getting Started](getting-started.md) for complete setup instructions.
 
 The minimal config looks like:
 
 ```json
 {
   "mcpServers": {
-    "context-mcp": {
+    "devmcp-context": {
       "command": "uv",
-      "args": ["run", "--", "context-mcp"],
+      "args": ["run", "--", "devmcp-context"],
       "cwd": "/absolute/path/to/your/project"
     }
   }
@@ -72,7 +103,7 @@ No manual server management needed.
 
 If building a custom agent, connect via MCP protocol:
 
-1. Start the context-mcp server
+1. Start the devmcp-context server
 2. Connect to it via MCP client
 3. Call the available tools
 4. Handle responses
@@ -107,19 +138,19 @@ results = client.call_tool("context_search", {
 
 ### Using Agent Config (Recommended)
 
-Register multiple context-mcp servers in your agent config with different `cwd` values. Each gets its own memory folder:
+Register multiple devmcp-context servers in your agent config with different `cwd` values. Each gets its own memory folder:
 
 ```json
 {
   "mcpServers": {
-    "context-mcp-project-a": {
+    "devmcp-context-project-a": {
       "command": "uv",
-      "args": ["run", "--", "context-mcp"],
+      "args": ["run", "--", "devmcp-context"],
       "cwd": "/path/to/project-a"
     },
-    "context-mcp-project-b": {
+    "devmcp-context-project-b": {
       "command": "uv",
-      "args": ["run", "--", "context-mcp"],
+      "args": ["run", "--", "devmcp-context"],
       "cwd": "/path/to/project-b"
     }
   }
@@ -135,11 +166,11 @@ For development, you can run separate server instances in different terminals:
 ```bash
 # Project A (Terminal 1)
 cd /path/to/project-a
-uv run context-mcp  # Stores in /path/to/project-a/ai-context/
+uv run devmcp-context  # Stores in /path/to/project-a/ai-context/
 
 # Project B (Terminal 2)
 cd /path/to/project-b
-uv run context-mcp  # Stores in /path/to/project-b/ai-context/
+uv run devmcp-context  # Stores in /path/to/project-b/ai-context/
 ```
 
 But for production use with agents, the config approach above is cleaner.
@@ -148,17 +179,17 @@ But for production use with agents, the config approach above is cleaner.
 
 ### Systemd Service (Linux)
 
-Create `/etc/systemd/system/context-mcp.service`:
+Create `/etc/systemd/system/devmcp-context.service`:
 
 ```ini
 [Unit]
-Description=context-mcp Server
+Description=devmcp-context Server
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/path/to/context-mcp
-ExecStart=/usr/bin/uv run context-mcp
+WorkingDirectory=/path/to/devmcp-context
+ExecStart=/usr/bin/uv run devmcp-context
 Restart=on-failure
 RestartSec=10
 User=contextmcp
@@ -170,15 +201,15 @@ WantedBy=multi-user.target
 Start the service:
 
 ```bash
-sudo systemctl enable context-mcp
-sudo systemctl start context-mcp
-sudo systemctl status context-mcp
+sudo systemctl enable devmcp-context
+sudo systemctl start devmcp-context
+sudo systemctl status devmcp-context
 ```
 
 View logs:
 
 ```bash
-sudo journalctl -u context-mcp -f
+sudo journalctl -u devmcp-context -f
 ```
 
 ### Docker
@@ -194,14 +225,14 @@ COPY . .
 RUN uv sync
 
 EXPOSE 3000
-CMD ["uv", "run", "context-mcp"]
+CMD ["uv", "run", "devmcp-context"]
 ```
 
 Build and run:
 
 ```bash
-docker build -t context-mcp .
-docker run -d -v context-data:/app/ai-context -p 3000:3000 context-mcp
+docker build -t devmcp-context .
+docker run -d -v context-data:/app/ai-context -p 3000:3000 devmcp-context
 ```
 
 ### Environment Considerations
@@ -272,7 +303,7 @@ Month 2: New team member. Load all context and speed up onboarding
 ### Check Memory Health
 
 ```bash
-uv run context-mcp-status
+uv run devmcp-context-status
 ```
 
 Shows:
@@ -286,7 +317,7 @@ Remove expired entries:
 
 ```bash
 # After this command, expired entries are purged
-uv run context-mcp-purge
+uv run devmcp-context-purge
 ```
 
 ### Backup

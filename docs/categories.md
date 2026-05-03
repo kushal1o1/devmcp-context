@@ -1,6 +1,6 @@
 # Memory Categories
 
-context-mcp organizes memory into five categories, each with a specific purpose and default expiration policy.
+devmcp-context organizes memory into five categories, each with a specific purpose and default expiration policy.
 
 ## Category Overview
 
@@ -11,6 +11,56 @@ context-mcp organizes memory into five categories, each with a specific purpose 
 | errors | Bugs seen, fixes tried, what worked | 30 days | Recording known issues and solutions |
 | tasks | In progress, blocked, recently completed | 14 days | Tracking current work |
 | ephemeral | Scratchpad — temporary data | 1 day | Session notes and temporary context |
+
+```mermaid
+graph LR
+    Project["Project<br/>∞ Never"]
+    Decisions["Decisions<br/>∞ Never"]
+    Errors["Errors<br/>30 days"]
+    Tasks["Tasks<br/>14 days"]
+    Ephemeral["Ephemeral<br/>1 day"]
+    
+    style Project fill:#e8e8ff
+    style Decisions fill:#e8e8ff
+    style Errors fill:#ffe8e8
+    style Tasks fill:#fff8e8
+    style Ephemeral fill:#f0e8ff
+```
+
+## TTL Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Agent
+    participant Server
+    participant Storage as ai-context/
+    
+    User->>Agent: Save to tasks
+    Agent->>Server: context_save(category=tasks, ttl_days=14)
+    Server->>Storage: Write entry (created_at: now)
+    Storage-->>Server: ✓
+    Server-->>Agent: Entry saved
+    
+    Note over Server: 7 days pass
+    Agent->>Server: context_load(tasks)
+    Server->>Storage: Read tasks.md
+    Storage-->>Server: All entries
+    Server->>Server: Check expiration (7 days old - still valid)
+    Server-->>Agent: [active entries]
+    
+    Note over Server: 14+ days pass
+    Agent->>Server: context_load(tasks, include_expired=true)
+    Server->>Storage: Read tasks.md
+    Storage-->>Server: All entries
+    Server->>Server: Check expiration (14+ days old - expired!)
+    Server-->>Agent: [includes expired]
+    
+    Agent->>Server: context_purge_expired()
+    Server->>Storage: Delete expired entries
+    Storage-->>Server: Deleted
+    Server-->>Agent: Cleanup complete
+```
 
 ## Project
 

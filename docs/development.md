@@ -1,12 +1,12 @@
 # Development Guide
 
-Contribute to context-mcp or extend it for your needs.
+Contribute to devmcp-context or extend it for your needs.
 
 ## Setup Development Environment
 
 ```bash
-git clone https://github.com/kushal1o1/context-mcp.git
-cd context-mcp
+git clone https://github.com/kushal1o1/devmcp-context.git
+cd devmcp-context
 uv sync --all-extras
 ```
 
@@ -18,8 +18,8 @@ The `--all-extras` flag installs:
 ## Project Structure
 
 ```
-context-mcp/
-  src/context_mcp/
+devmcp-context/
+  src/devmcp_context/
     __init__.py
     models.py           # Data models (Category, ContextEntry, CategoryFile)
     storage.py          # File I/O and persistence
@@ -33,6 +33,43 @@ context-mcp/
   .github/workflows/    # CI/CD pipelines
   mkdocs.yml           # Docs configuration
   pyproject.toml       # Project metadata and dependencies
+```
+
+```mermaid
+graph TB
+    subgraph Source["Source Code"]
+        Models["models.py<br/>(Data Models)"]
+        Storage["storage.py<br/>(File I/O)"]
+        Scaffold["scaffold.py<br/>(Init)"]
+        Server["server.py<br/>(MCP Server)"]
+    end
+    
+    subgraph Tests["Test Suite"]
+        TM["test_models.py<br/>(16 tests, 100%)"]
+        TS["test_storage.py<br/>(18 tests, 97%)"]
+        Conf["conftest.py<br/>(Fixtures)"]
+    end
+    
+    subgraph CI["CI/CD"]
+        T["tests.yml"]
+        R["ruff.yml"]
+        D["docs.yml"]
+    end
+    
+    Models --> TM
+    Storage --> TS
+    Scaffold --> TS
+    Server --> TM
+    
+    TM --> T
+    TS --> T
+    Models --> R
+    Storage --> R
+    D --> CI
+    
+    style Source fill:#e8e8ff
+    style Tests fill:#e8ffe8
+    style CI fill:#ffe8e8
 ```
 
 ## Running Tests
@@ -52,13 +89,43 @@ uv run pytest tests/test_models.py -v
 Run with coverage:
 
 ```bash
-uv run pytest tests/ --cov=src/context_mcp --cov-report=html
+uv run pytest tests/ --cov=src/devmcp_context --cov-report=html
 ```
 
 Test coverage includes:
 - 100% coverage of models.py
 - 97% coverage of storage.py
 - 34 total tests, all passing
+
+```mermaid
+graph TB
+    Start["Run Tests"]
+    Pytest["pytest tests/"]
+    Models["test_models.py"]
+    Storage["test_storage.py"]
+    Units["16 Unit Tests"]
+    Integration["18 Integration Tests"]
+    Coverage["Coverage Report"]
+    Pass["34/34 Passing"]
+    
+    Start --> Pytest
+    Pytest --> Models
+    Pytest --> Storage
+    Models --> Units
+    Storage --> Integration
+    Units --> Pass
+    Integration --> Pass
+    Pass --> Coverage
+    
+    style Start fill:#f0f0f0
+    style Pytest fill:#60a5fa,color:#0f172a
+    style Models fill:#e8e8ff
+    style Storage fill:#e8e8ff
+    style Units fill:#e8ffe8
+    style Integration fill:#e8ffe8
+    style Pass fill:#e8ffe8
+    style Coverage fill:#fff8e8
+```
 
 ## Code Quality
 
@@ -89,11 +156,38 @@ Ruff rules enabled:
 - SIM: flake8-simplify
 - RUF: ruff-specific
 
+```mermaid
+graph TB
+    Code["Your Code"]
+    Ruff["ruff check"]
+    Rules["E, W, F, I, UP, B, SIM, RUF"]
+    Issues{"Issues<br/>Found?"}
+    Fixed["Auto Fix"]
+    Format["ruff format"]
+    Pass["✓ Passes All Checks"]
+    
+    Code --> Ruff
+    Ruff --> Rules
+    Rules --> Issues
+    Issues -->|Yes| Fixed
+    Issues -->|No| Format
+    Fixed --> Format
+    Format --> Pass
+    
+    style Code fill:#f0f0f0
+    style Pytest fill:#60a5fa,color:#0f172a
+    style Rules fill:#e8e8e8
+    style Issues fill:#ffe8e8
+    style Fixed fill:#ffe8e8
+    style Format fill:#fff8e8
+    style Pass fill:#e8ffe8
+```
+
 ## Adding Features
 
 ### Add a New Tool
 
-1. Define the tool in `src/context_mcp/server.py` using FastMCP decorator:
+1. Define the tool in `src/devmcp_context/server.py` using FastMCP decorator:
 
 ```python
 @mcp.tool(
@@ -110,9 +204,9 @@ def my_tool(param: str) -> str:
 
 ### Modify Data Model
 
-1. Update `ContextEntry` or related models in `src/context_mcp/models.py`
+1. Update `ContextEntry` or related models in `src/devmcp_context/models.py`
 
-2. Update storage parsing in `src/context_mcp/storage.py`
+2. Update storage parsing in `src/devmcp_context/storage.py`
 
 3. Add tests for the changes
 
@@ -120,7 +214,7 @@ def my_tool(param: str) -> str:
 
 ### Extend Storage
 
-1. Add new functions to `src/context_mcp/storage.py`
+1. Add new functions to `src/devmcp_context/storage.py`
 
 2. Handle backward compatibility
 

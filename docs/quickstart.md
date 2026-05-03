@@ -2,7 +2,7 @@
 
 ## Using with Claude (Recommended)
 
-If you've set up context-mcp with Claude Desktop, you're ready to go. Just start chatting:
+If you've set up devmcp-context with Claude Desktop, you're ready to go. Just start chatting:
 
 > "I have a new project. Let me save the tech stack to memory: We're using Python 3.12, FastAPI, and PostgreSQL."
 
@@ -14,13 +14,36 @@ To review what was saved:
 
 Claude retrieves and displays your memories.
 
+```mermaid
+graph LR
+    A["Claude<br/>Starts"]
+    B["Server<br/>Auto-Starts"]
+    C["You Chat"]
+    D["Claude Calls<br/>Memory Tools"]
+    E["Memory<br/>Persisted"]
+    F["Next Session<br/>Memories Avail"]
+    
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    
+    style A fill:#e8e8ff
+    style B fill:#60a5fa,color:#0f172a
+    style C fill:#e8e8ff
+    style D fill:#e8e8ff
+    style E fill:#f0f0f0
+    style F fill:#e8ffe8
+```
+
 ## Exploring the API (Development/Testing)
 
-If you want to manually test the API or use context-mcp in development, start the server:
+If you want to manually test the API or use devmcp-context in development, start the server:
 
 ```bash
-cd /path/to/context-mcp
-uv run context-mcp
+cd /path/to/devmcp-context
+uv run devmcp-context
 ```
 
 Then use the tools directly:

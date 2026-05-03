@@ -2,6 +2,43 @@
 
 All tools are exposed via the Model Context Protocol (MCP) interface. Use these in any MCP-compatible agent.
 
+```mermaid
+graph TB
+    Agent["Agent / User"]
+    
+    Save["context_save<br/>(Create/Update)"]
+    Load["context_load<br/>(Retrieve)"]
+    Search["context_search<br/>(Find)"]
+    Delete["context_delete<br/>(Remove)"]
+    Status["context_status<br/>(Summary)"]
+    Purge["context_purge_expired<br/>(Cleanup)"]
+    
+    Storage["ai-context/<br/>(Persistent Storage)"]
+    
+    Agent -->|save entry| Save
+    Agent -->|load entries| Load
+    Agent -->|search entries| Search
+    Agent -->|delete entry| Delete
+    Agent -->|get stats| Status
+    Agent -->|cleanup expired| Purge
+    
+    Save --> Storage
+    Load --> Storage
+    Search --> Storage
+    Delete --> Storage
+    Status --> Storage
+    Purge --> Storage
+    
+    style Agent fill:#e8e8ff
+    style Save fill:#60a5fa,color:#0f172a
+    style Load fill:#60a5fa,color:#0f172a
+    style Search fill:#60a5fa,color:#0f172a
+    style Delete fill:#60a5fa,color:#0f172a
+    style Status fill:#60a5fa,color:#0f172a
+    style Purge fill:#60a5fa,color:#0f172a
+    style Storage fill:#f0f0f0
+```
+
 ## context_save
 
 Save or update a memory entry.

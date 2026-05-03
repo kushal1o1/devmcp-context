@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for your interest in contributing to context-mcp.
+Thank you for your interest in contributing to devmcp-context.
 
 ## How to Contribute
 
@@ -46,8 +46,8 @@ See the [Development Guide](development.md) for setup instructions.
 Quick start:
 
 ```bash
-git clone https://github.com/kushal1o1/context-mcp.git
-cd context-mcp
+git clone https://github.com/kushal1o1/devmcp-context.git
+cd devmcp-context
 uv sync --all-extras
 uv run pytest tests/ -v
 ```
