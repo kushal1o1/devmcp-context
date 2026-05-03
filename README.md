@@ -1,7 +1,7 @@
 # devmcp-context
 
 <p align="center">
-	<img src="https://raw.githubusercontent.com/kushal1o1/devmcp-context/main/static/logo.png" alt="devmcp-context logo" width="420" />
+	<img src="https://github.com/kushal1o1/devmcp-context/blob/main/static/logo.png?raw=true" alt="devmcp-context logo" width="420" />
 </p>
 
 Structured AI memory layer. A single source of truth for what your agent knows across conversations.
