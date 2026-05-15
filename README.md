@@ -1,5 +1,9 @@
 # devmcp-context
 
+[![PyPI version](https://img.shields.io/pypi/v/devmcp-context.svg)](https://pypi.org/project/devmcp-context/)
+[![Python](https://img.shields.io/pypi/pyversions/devmcp-context.svg)](https://pypi.org/project/devmcp-context/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)
+
 <p align="center">
 	<img src="https://github.com/kushal1o1/devmcp-context/blob/main/static/logo.png?raw=true" alt="devmcp-context logo" width="420" />
 </p>
@@ -7,6 +11,8 @@
 Structured AI memory layer. A single source of truth for what your agent knows across conversations.
 
 `devmcp-context` is a Model Context Protocol (MCP) server that provides persistent, organized memory for AI agents. Your agent's memory is now **visible, editable, and searchable** — without retraining.
+
+Published on PyPI: [https://pypi.org/project/devmcp-context/](https://pypi.org/project/devmcp-context/)
 
 ## The Problem
 
@@ -78,8 +84,8 @@ Use context_search to find specific memories:
 
 ## License
 
-MIT — See LICENSE for details.
+MIT — See [LICENSE](LICENSE) for details.
 
 ## Contributing
 
-Contributions welcome! See CONTRIBUTING.md for guidelines.
+Contributions welcome! See [CONTRIBUTING.md](docs/contributing.md) for guidelines.
