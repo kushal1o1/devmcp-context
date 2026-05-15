@@ -4,14 +4,20 @@ build-backend = "hatchling.build"
 
 [project]
 name = "devmcp-context"
-version = "0.1.2"
-description = "Structured AI memory layer — single source of truth for what your agent knows"
-readme = "README.md"
+version = "0.1.3"
+description = "Structured AI memory layer — single source of truth for what your agent knows :)"
+readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.12"
 dependencies = [
     "mcp[cli]>=1.0.0",
     "pydantic>=2.0.0",
 ]
+
+[project.urls]
+Homepage = "https://kushal1o1.github.io/devmcp-context/"
+Repository = "https://github.com/kushal1o1/devmcp-context"
+Issues = "https://github.com/kushal1o1/devmcp-context/issues"
+Documentation = "https://kushal1o1.github.io/devmcp-context/"
 
 [project.optional-dependencies]
 dev = [
