@@ -6,37 +6,68 @@ All tools are exposed via the Model Context Protocol (MCP) interface. Use these 
 graph TB
     Agent["Agent / User"]
     
+    Start["context_session_start<br/>(Auto-Recall)"]
     Save["context_save<br/>(Create/Update)"]
     Load["context_load<br/>(Retrieve)"]
     Search["context_search<br/>(Find)"]
     Delete["context_delete<br/>(Remove)"]
     Status["context_status<br/>(Summary)"]
     Purge["context_purge_expired<br/>(Cleanup)"]
+    Log["context_log_session_recall<br/>(Metric)"]
     
     Storage["ai-context/<br/>(Persistent Storage)"]
     
+    Agent -->|start session| Start
     Agent -->|save entry| Save
     Agent -->|load entries| Load
     Agent -->|search entries| Search
     Agent -->|delete entry| Delete
     Agent -->|get stats| Status
     Agent -->|cleanup expired| Purge
+    Agent -->|log metric| Log
     
+    Start --> Storage
     Save --> Storage
     Load --> Storage
     Search --> Storage
     Delete --> Storage
     Status --> Storage
     Purge --> Storage
+    Log --> Storage
     
     style Agent fill:#e8e8ff
+    style Start fill:#34d399,color:#0f172a
     style Save fill:#60a5fa,color:#0f172a
     style Load fill:#60a5fa,color:#0f172a
     style Search fill:#60a5fa,color:#0f172a
     style Delete fill:#60a5fa,color:#0f172a
     style Status fill:#60a5fa,color:#0f172a
     style Purge fill:#60a5fa,color:#0f172a
+    style Log fill:#fbbf24,color:#0f172a
     style Storage fill:#f0f0f0
+```
+
+## context_session_start
+
+**Call this FIRST at session start.** Auto-loads project + decisions memory and shows a compact index of all other categories. Returns recent session recall stats.
+
+### Parameters
+
+None
+
+### Returns
+
+- `auto_loaded` — Full entries from `project` and `decisions` categories
+- `compact_index` — One-line summaries (key + lead fact) for `errors`, `tasks`, `ephemeral`
+- `recent_session_recall_stats` — Whether past sessions used recall before edits
+
+### Example
+
+```python
+session = context_session_start()
+# Read auto-loaded project knowledge
+for entry in session["auto_loaded"]["project"]:
+    print(f"{entry['key']}: {entry['value']}")
 ```
 
 ## context_save
@@ -47,24 +78,27 @@ Save or update a memory entry.
 
 - **category** (required) - One of: `project`, `decisions`, `errors`, `tasks`, `ephemeral`
 - **key** (required) - Unique identifier within the category
-- **value** (required) - The content to remember
+- **value** (required) - The content to remember. **Put the key fact on the first line.**
 - **tags** (optional) - List of searchable tags
 - **ttl_days** (optional) - Override default TTL. `None` means never expires
-- **source** (optional) - Who is saving this. Default: `"agent"`
+- **what_worked** (optional) - What worked about this decision/error. Only valid for `decisions` and `errors` categories.
+- **what_failed** (optional) - What failed about this decision/error. Only valid for `decisions` and `errors` categories.
+- **superseded_by** (optional) - Key of the entry that supersedes this one. Recall follows the pointer.
 
 ### Returns
 
-Entry is saved and persisted to disk.
+Entry is saved and persisted to disk. If updating an existing entry, `created_at` is preserved.
 
 ### Example
 
 ```python
 context_save(
-    category="project",
+    category="decisions",
     key="auth-strategy",
-    value="Using OAuth2 for authentication",
+    value="Using OAuth2 for authentication\nGitHub provider, JWT tokens",
     tags=["auth", "security"],
-    ttl_days=None
+    what_worked="Zero server-side state, scales horizontally",
+    what_failed="Token refresh adds complexity"
 )
 ```
 
@@ -79,27 +113,28 @@ Retrieve entries from a category.
 
 ### Returns
 
-List of `ContextEntry` objects with:
+List of entries with:
 - `key` - Entry identifier
 - `value` - Content
-- `created_at` - Creation timestamp
-- `updated_at` - Last update timestamp
+- `age_days` - How old the entry is
 - `ttl_days` - Time-to-live in days
 - `tags` - List of tags
 - `source` - Who created it
-- `is_expired` - Boolean indicating if expired
+- `what_worked` - What worked (decisions/errors only)
+- `what_failed` - What failed (decisions/errors only)
+- `superseded_by` - Key of successor entry, if superseded
 
 ### Example
 
 ```python
-entries = context_load(category="project")
+entries = context_load(category="decisions")
 for entry in entries:
-    print(f"{entry.key}: {entry.value}")
+    print(f"{entry['key']}: {entry['value']}")
 ```
 
 ## context_search
 
-Search across all categories by keyword.
+Search across all categories by keyword. Superseded entries are excluded (their successors are returned instead).
 
 ### Parameters
 
@@ -107,12 +142,7 @@ Search across all categories by keyword.
 
 ### Returns
 
-List of `ContextEntry` objects that match the query in:
-- Entry key
-- Entry value
-- Entry tags
-
-Results only include active (non-expired) entries.
+List of matching entries. Results only include active (non-expired, non-superseded) entries.
 
 ### Example
 
@@ -153,19 +183,13 @@ None
 
 ### Returns
 
-List of category summaries, each containing:
-- `category` - Category name
-- `description` - Category purpose
-- `total_entries` - Total entries (including expired)
-- `active_entries` - Non-expired entries
-- `expired_entries` - Expired entries
-- `oldest_days` - Age of oldest active entry
+List of category summaries with entry counts, staleness, and descriptions.
 
 ### Example
 
 ```python
 status = context_status()
-for cat_summary in status:
+for cat_summary in status["categories"]:
     print(f"{cat_summary['category']}: {cat_summary['active_entries']} active")
 ```
 
@@ -188,6 +212,26 @@ removed = context_purge_expired()
 print(f"Cleaned up {removed} expired entries")
 ```
 
+## context_log_session_recall
+
+Log whether recall fired before the first edit in this session. Call at session end to record the metric.
+
+### Parameters
+
+None
+
+### Returns
+
+- `logged` - Boolean indicating success
+- `recall_fired` - Whether recall was used before first edit
+
+### Example
+
+```python
+result = context_log_session_recall()
+print(result["message"])  # "Session recall fired before first edit: YES"
+```
+
 ## Data Model
 
 ### ContextEntry
@@ -195,27 +239,18 @@ print(f"Cleaned up {removed} expired entries")
 ```python
 {
     "key": str,                  # Unique identifier
-    "value": str,               # Content
+    "value": str,               # Content (key fact on first line recommended)
     "category": str,            # project|decisions|errors|tasks|ephemeral
     "created_at": datetime,     # ISO format
     "updated_at": datetime,     # ISO format
     "ttl_days": int | None,     # Days until expiry, None = never
-    "tags": list[str],          # Searchable labels
+    "tags": list[str],          # Searchable labels (pipe-delimited in .md files)
     "source": str,              # "agent" or "human" or custom
-    "is_expired": bool           # Computed property
-}
-```
-
-### CategoryFile
-
-Represents all entries in a category:
-
-```python
-{
-    "category": str,
-    "entries": list[ContextEntry],
-    "active_entries": list[ContextEntry],  # Filtered non-expired
-    "summary": dict  # Stats about the category
+    "what_worked": str | None,  # What worked (decisions/errors only)
+    "what_failed": str | None,  # What failed (decisions/errors only)
+    "superseded_by": str | None,# Key of successor entry
+    "is_expired": bool,         # Computed property
+    "is_superseded": bool       # Computed property
 }
 ```
 
@@ -223,42 +258,20 @@ Represents all entries in a category:
 
 All tools return clear responses. Common scenarios:
 
-### Entry Not Found
-```python
-# context_delete returns False
-result = context_delete(category="tasks", key="nonexistent")
-# result is False
-```
-
 ### Invalid Category
 ```python
-# Will raise validation error
 context_save(category="invalid", key="k", value="v")
-# Error: invalid is not a valid Category
+# Returns: {"error": "Unknown category 'invalid'. Valid: [...]"}
 ```
 
-### Expired Entry
+### Outcome Fields on Wrong Category
 ```python
-# Expired entries are excluded by default
-entries = context_load(category="errors")
-# Only active entries returned
-
-# To include expired:
-all_entries = context_load(category="errors", include_expired=True)
+context_save(category="project", key="k", value="v", what_worked="yes")
+# Raises: ValueError: what_worked/what_failed are only valid for decisions or errors
 ```
-
-## Rate Limits
-
-No built-in rate limits. Constraints are:
-
-- File I/O based on disk speed
-- Memory for search indexing
-- TTL processing on demand
-
-For high-volume scenarios, consider running purge_expired() during off-peak times.
 
 ## Storage Location
 
 All data stored in: `<project_root>/ai-context/`
 
-Files are in Markdown format, editable manually if needed.
+Files are in Markdown format, editable manually if needed. Tags are pipe-delimited (`|`) in the meta comments.

@@ -27,6 +27,8 @@ graph LR
     style Ephemeral fill:#f0e8ff
 ```
 
+Each entry can have `what_worked` and `what_failed` fields (decisions/errors only), and `superseded_by` to redirect recall to a successor entry.
+
 ## TTL Lifecycle
 
 ```mermaid
@@ -116,6 +118,35 @@ Significant architectural and design decisions. Why certain choices were made.
 
 ### Default TTL: Never expires
 
+### Outcome Fields
+
+Decisions support `what_worked` and `what_failed` to track outcomes:
+
+```python
+context_save(
+    category="decisions",
+    key="why-postgresql",
+    value="Chose PostgreSQL over MongoDB for the billing service",
+    what_worked="ACID guarantees, strong JOIN support, team expertise",
+    what_failed="Heavier setup than MongoDB for document workloads"
+)
+```
+
+### Superseding Decisions
+
+When a decision is reversed, use `superseded_by` instead of deleting:
+
+```python
+context_save(
+    category="decisions",
+    key="old-framework",
+    value="Using Flask for the API (replaced by FastAPI)",
+    superseded_by="new-framework"
+)
+```
+
+Recall follows the pointer — searching for "framework" returns the new entry while the old one stays in the file for history.
+
 ### Examples
 
 Why we use PostgreSQL:
@@ -168,31 +199,34 @@ Known bugs, issues encountered, and their solutions.
 
 Helps reference recent fixes. Older bug fixes are auto-archived after 30 days but can be re-saved if still relevant.
 
+### Outcome Fields
+
+Errors support `what_worked` and `what_failed` to track what was tried:
+
+```python
+context_save(
+    category="errors",
+    key="db-pool-exhaustion",
+    value="Connection pool exhausted under load — increased pool size to 50",
+    tags=["database", "performance", "production"],
+    what_worked="Increased pool size to 50, added 30s connection timeout",
+    what_failed="First tried recycling connections — caused deadlocks"
+)
+```
+
 ### Examples
 
 Timeout issue and fix:
 ```
 key: "api-timeout-issue"
-value: "
-Issue: All API calls timeout after 30s
-Root cause: Missing timeout config in load balancer
-Fix: Added timeout=60 to nginx upstream config
-File: /etc/nginx/upstream.conf, line 42
-Status: Resolved
-"
+value: "API calls timeout after 30s — fix: increase nginx timeout"
 tags: ["api", "timeout", "critical"]
 ```
 
 Database connection pool exhaustion:
 ```
 key: "db-pool-exhaustion"
-value: "
-Issue: "Connection pool is exhausted" errors under load
-Investigation: Connections not being returned to pool
-Cause: Missing connection.close() in error handler
-Fix: Added try/finally block to ensure cleanup
-Test: Load test with 1000 concurrent users - stable
-"
+value: "Connection pool exhausted under load — increased pool size to 50"
 tags: ["database", "performance", "production"]
 ```
 
