@@ -58,3 +58,39 @@ def active_entry() -> ContextEntry:
         tags=["urgent"],
         source="test",
     )
+
+
+@pytest.fixture
+def decision_entry() -> ContextEntry:
+    """Create a decision entry with outcome fields for testing."""
+    return ContextEntry(
+        key="auth-decision",
+        value="Chose JWT over sessions for statelessness",
+        category=Category.decisions,
+        what_worked="Zero server-side state, scales horizontally",
+        what_failed="Token refresh is complex",
+        source="test",
+    )
+
+
+@pytest.fixture
+def superseded_entry() -> ContextEntry:
+    """Create a superseded entry for testing."""
+    return ContextEntry(
+        key="old-auth-strategy",
+        value="Used cookie-based sessions",
+        category=Category.decisions,
+        superseded_by="new-auth-strategy",
+        source="test",
+    )
+
+
+@pytest.fixture
+def successor_entry() -> ContextEntry:
+    """Create a successor entry for testing."""
+    return ContextEntry(
+        key="new-auth-strategy",
+        value="Switched to JWT tokens for stateless auth",
+        category=Category.decisions,
+        source="test",
+    )

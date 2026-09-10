@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from devmcp_context.models import Category, CategoryFile, ContextEntry
+import pytest
+
+from devmcp_context.models import Category, CategoryFile, ContextEntry, lead_fact
 
 
 class TestCategory:
@@ -151,7 +153,7 @@ class TestContextEntry:
         assert "### test-key" in md
         assert "test value" in md
         assert "ttl=never" in md
-        assert "tag1, tag2" in md
+        assert "tag1|tag2" in md
         assert "source=test" in md
 
     def test_to_md_block_with_ttl(self):
@@ -167,6 +169,114 @@ class TestContextEntry:
         md = entry.to_md_block()
         assert "### another-key" in md
         assert "ttl=30d" in md
+
+    def test_to_md_block_with_outcomes(self):
+        """Test markdown block generation with outcome fields."""
+        entry = ContextEntry(
+            key="decided-x",
+            value="Chose X over Y",
+            category=Category.decisions,
+            ttl_days=None,
+            what_worked="Faster",
+            what_failed="More complex setup",
+        )
+        md = entry.to_md_block()
+        assert "what_worked=Faster" in md
+        assert "what_failed=More complex setup" in md
+
+    def test_to_md_block_with_superseded_by(self):
+        """Test markdown block generation with superseded_by."""
+        entry = ContextEntry(
+            key="old-way",
+            value="Used old approach",
+            category=Category.decisions,
+            ttl_days=None,
+            superseded_by="new-way",
+        )
+        md = entry.to_md_block()
+        assert "superseded_by=new-way" in md
+
+    def test_is_superseded_property(self):
+        """Test the is_superseded property."""
+        entry = ContextEntry(
+            key="k", value="v", category=Category.decisions, ttl_days=None
+        )
+        assert entry.is_superseded is False
+
+        entry_superseded = ContextEntry(
+            key="k", value="v", category=Category.decisions, ttl_days=None,
+            superseded_by="new-k",
+        )
+        assert entry_superseded.is_superseded is True
+
+    def test_outcome_fields_only_for_decisions_errors(self):
+        """Test that what_worked/what_failed are rejected for non-decisions/errors categories."""
+        with pytest.raises(ValueError, match="only valid for decisions or errors"):
+            ContextEntry(
+                key="k", value="v", category=Category.project,
+                what_worked="something",
+            )
+
+        with pytest.raises(ValueError, match="only valid for decisions or errors"):
+            ContextEntry(
+                key="k", value="v", category=Category.tasks,
+                what_failed="something",
+            )
+
+    def test_outcome_fields_allowed_for_decisions(self):
+        """Test that what_worked/what_failed are accepted for decisions."""
+        entry = ContextEntry(
+            key="k", value="v", category=Category.decisions,
+            what_worked="this", what_failed="that",
+        )
+        assert entry.what_worked == "this"
+        assert entry.what_failed == "that"
+
+    def test_outcome_fields_allowed_for_errors(self):
+        """Test that what_worked/what_failed are accepted for errors."""
+        entry = ContextEntry(
+            key="k", value="v", category=Category.errors,
+            what_worked="this", what_failed="that",
+        )
+        assert entry.what_worked == "this"
+        assert entry.what_failed == "that"
+
+    def test_superseded_by_default_none(self):
+        """Test that superseded_by defaults to None."""
+        entry = ContextEntry(key="k", value="v", category=Category.project)
+        assert entry.superseded_by is None
+
+
+class TestLeadFact:
+    """Tests for the lead_fact function."""
+
+    def test_single_line_value(self):
+        """Test lead_fact with a single-line value."""
+        entry = ContextEntry(key="k", value="The answer is 42", category=Category.project)
+        assert lead_fact(entry) == "The answer is 42"
+
+    def test_multiline_value(self):
+        """Test lead_fact picks the first non-empty line."""
+        entry = ContextEntry(
+            key="k",
+            value="Key fact here\n\nMore details below\nEven more context",
+            category=Category.project,
+        )
+        assert lead_fact(entry) == "Key fact here"
+
+    def test_value_with_leading_blank_lines(self):
+        """Test lead_fact skips leading blank lines."""
+        entry = ContextEntry(
+            key="k",
+            value="\n\nActual first line\nRest of content",
+            category=Category.project,
+        )
+        assert lead_fact(entry) == "Actual first line"
+
+    def test_empty_value_fallback(self):
+        """Test lead_fact falls back to truncated value for empty strings."""
+        entry = ContextEntry(key="k", value="", category=Category.project)
+        assert lead_fact(entry) == ""
 
 
 class TestCategoryFile:
