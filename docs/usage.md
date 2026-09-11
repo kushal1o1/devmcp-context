@@ -64,7 +64,7 @@ Put the most important information on the first line. It's what shows in session
 context_save(
     category="errors",
     key="timeout-issue",
-    value="API calls timeout after 30s — fix: increase nginx timeout\nRoot cause: missing timeout config in load balancer\nFile: /etc/nginx/upstream.conf, line 42",
+    value="API calls timeout after 30s - fix: increase nginx timeout\nRoot cause: missing timeout config in load balancer\nFile: /etc/nginx/upstream.conf, line 42",
     tags=["api", "timeout", "critical"]
 )
 ```
@@ -281,7 +281,7 @@ context_save("decisions", "auth-v1", "Cookie-based sessions")
 # Session 2 (days later)
 context_save("decisions", "auth-v2", "Switched to JWT", superseded_by="auth-v1")
 
-# Session 3 — search skips auth-v1, returns auth-v2
+# Session 3 - search skips auth-v1, returns auth-v2
 results = context_search("auth")  # Returns auth-v2
 ```
 
@@ -293,7 +293,7 @@ Track what worked and what failed for future reference:
 context_save(
     category="errors",
     key="db-pool-fix",
-    value="Connection pool exhausted under load — increased pool size to 50",
+    value="Connection pool exhausted under load - increased pool size to 50",
     what_worked="Increased pool size, added connection timeout",
     what_failed="First tried recycling connections (caused deadlocks)"
 )
@@ -301,6 +301,6 @@ context_save(
 
 ## Next Steps
 
-- [API Reference](api.md) — Complete tool documentation
-- [Memory Categories](categories.md) — Deep dive into each category
-- [Deployment](deployment.md) — Integration with agents
+- [API Reference](api.md) - Complete tool documentation
+- [Memory Categories](categories.md) - Deep dive into each category
+- [Deployment](deployment.md) - Integration with agents

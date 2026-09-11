@@ -57,9 +57,9 @@ None
 
 ### Returns
 
-- `auto_loaded` — Full entries from `project` and `decisions` categories
-- `compact_index` — One-line summaries (key + lead fact) for `errors`, `tasks`, `ephemeral`
-- `recent_session_recall_stats` — Whether past sessions used recall before edits
+- `auto_loaded` - Full entries from `project` and `decisions` categories
+- `compact_index` - One-line summaries (key + lead fact) for `errors`, `tasks`, `ephemeral`
+- `recent_session_recall_stats` - Whether past sessions used recall before edits
 
 ### Example
 

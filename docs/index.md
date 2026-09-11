@@ -11,10 +11,10 @@ See what your AI agent actually knows. Edit it. Remove it. Fix it. All without r
 AI agents are black boxes. You can't see what they remember. When they forget something important or remember something wrong, you're stuck. You have no way to inspect their memory, fix mistakes, or pick what matters.
 
 **devmcp-context changes this.** Your agent's memory is now:
-- **Visible** — Plain text files in your project folder
-- **Editable** — Open any file, make changes, agent sees them immediately
-- **Structured** — Organized into 5 categories with automatic cleanup
-- **Persistent** — Survives across agent sessions and restarts
+- **Visible** - Plain text files in your project folder
+- **Editable** - Open any file, make changes, agent sees them immediately
+- **Structured** - Organized into 5 categories with automatic cleanup
+- **Persistent** - Survives across agent sessions and restarts
 
 ## How It Works
 
@@ -56,24 +56,24 @@ graph TB
 - Persistent memory across conversations
 - Visual inspection of all memories
 - Manual editing capability
-- No database, no complexity — just plain text
+- No database, no complexity - just plain text
 
 ## Memory Categories
 
-- **project** — Architecture, stack, permanent knowledge (never expires)
-- **decisions** — Why you chose something, trade-offs (never expires)
-- **errors** — Bugs fixed, what went wrong, solutions (expires in 30 days)
-- **tasks** — Current work, in-progress items (expires in 14 days)
-- **ephemeral** — Temporary notes, scratchpad (expires in 1 day)
+- **project** - Architecture, stack, permanent knowledge (never expires)
+- **decisions** - Why you chose something, trade-offs (never expires)
+- **errors** - Bugs fixed, what went wrong, solutions (expires in 30 days)
+- **tasks** - Current work, in-progress items (expires in 14 days)
+- **ephemeral** - Temporary notes, scratchpad (expires in 1 day)
 
 ## Quick Links
 
-- [Getting Started](getting-started.md) — Setup guide with step-by-step instructions for any MCP agent
-- [Installation](installation.md) — Install devmcp-context
-- [API Reference](api.md) — All available tools
-- [Memory Categories](categories.md) — Deep dive into each category
-- [Deployment Guide](deployment.md) — Production setups, Docker, systemd
-- [Development](development.md) — Contribute or extend
+- [Getting Started](getting-started.md) - Setup guide with step-by-step instructions for any MCP agent
+- [Installation](installation.md) - Install devmcp-context
+- [API Reference](api.md) - All available tools
+- [Memory Categories](categories.md) - Deep dive into each category
+- [Deployment Guide](deployment.md) - Production setups, Docker, systemd
+- [Development](development.md) - Contribute or extend
 
 ## License
 

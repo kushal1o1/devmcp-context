@@ -7,10 +7,10 @@ devmcp-context organizes memory into five categories, each with a specific purpo
 | Category | Purpose | Default TTL | Use When |
 |----------|---------|-------------|----------|
 | project | Stack, goals, conventions, repo structure | Never | Long-term project knowledge |
-| decisions | Why X was chosen over Y — architectural choices | Never | Important design decisions |
+| decisions | Why X was chosen over Y - architectural choices | Never | Important design decisions |
 | errors | Bugs seen, fixes tried, what worked | 30 days | Recording known issues and solutions |
 | tasks | In progress, blocked, recently completed | 14 days | Tracking current work |
-| ephemeral | Scratchpad — temporary data | 1 day | Session notes and temporary context |
+| ephemeral | Scratchpad - temporary data | 1 day | Session notes and temporary context |
 
 ```mermaid
 graph LR
@@ -145,7 +145,7 @@ context_save(
 )
 ```
 
-Recall follows the pointer — searching for "framework" returns the new entry while the old one stays in the file for history.
+Recall follows the pointer - searching for "framework" returns the new entry while the old one stays in the file for history.
 
 ### Examples
 
@@ -207,10 +207,10 @@ Errors support `what_worked` and `what_failed` to track what was tried:
 context_save(
     category="errors",
     key="db-pool-exhaustion",
-    value="Connection pool exhausted under load — increased pool size to 50",
+    value="Connection pool exhausted under load - increased pool size to 50",
     tags=["database", "performance", "production"],
     what_worked="Increased pool size to 50, added 30s connection timeout",
-    what_failed="First tried recycling connections — caused deadlocks"
+    what_failed="First tried recycling connections - caused deadlocks"
 )
 ```
 
@@ -219,14 +219,14 @@ context_save(
 Timeout issue and fix:
 ```
 key: "api-timeout-issue"
-value: "API calls timeout after 30s — fix: increase nginx timeout"
+value: "API calls timeout after 30s - fix: increase nginx timeout"
 tags: ["api", "timeout", "critical"]
 ```
 
 Database connection pool exhaustion:
 ```
 key: "db-pool-exhaustion"
-value: "Connection pool exhausted under load — increased pool size to 50"
+value: "Connection pool exhausted under load - increased pool size to 50"
 tags: ["database", "performance", "production"]
 ```
 

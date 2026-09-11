@@ -168,6 +168,6 @@ Each category has a default TTL (time-to-live):
 
 ## Next Steps
 
-- [Usage Guide](usage.md) — Detailed examples and patterns
-- [API Reference](api.md) — Complete tool documentation
-- [Deployment](deployment.md) — How to use with your agent
+- [Usage Guide](usage.md) - Detailed examples and patterns
+- [API Reference](api.md) - Complete tool documentation
+- [Deployment](deployment.md) - How to use with your agent

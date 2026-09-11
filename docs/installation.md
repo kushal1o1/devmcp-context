@@ -93,6 +93,6 @@ You should see the server name and available MCP tools listed.
 
 ## Next Steps
 
-- [Quick Start](quickstart.md) — Start using devmcp-context in minutes
-- [Usage Guide](usage.md) — Learn the complete workflow
-- [Deployment](deployment.md) — Integrate with your agent
+- [Quick Start](quickstart.md) - Start using devmcp-context in minutes
+- [Usage Guide](usage.md) - Learn the complete workflow
+- [Deployment](deployment.md) - Integrate with your agent
