@@ -182,9 +182,7 @@ def delete_entry(project_root: Path, category: Category, key: str) -> bool:
     return True
 
 
-def _follow_superseded(
-    project_root: Path, entry: ContextEntry, _depth: int = 0
-) -> ContextEntry:
+def _follow_superseded(project_root: Path, entry: ContextEntry, _depth: int = 0) -> ContextEntry:
     """Follow superseded_by pointers to return the successor entry.
 
     Returns the current entry if not superseded or if the pointer chain is broken.
@@ -297,7 +295,5 @@ def get_recent_session_stats(project_root: Path, n: int = 10) -> list[dict]:
     for line in data_lines[-n:]:
         parts = [p.strip() for p in line.split("|") if p.strip()]
         if len(parts) >= 2:
-            results.append(
-                {"timestamp": parts[0], "recall_fired": parts[1] == "true"}
-            )
+            results.append({"timestamp": parts[0], "recall_fired": parts[1] == "true"})
     return results

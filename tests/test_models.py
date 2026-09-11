@@ -198,13 +198,14 @@ class TestContextEntry:
 
     def test_is_superseded_property(self):
         """Test the is_superseded property."""
-        entry = ContextEntry(
-            key="k", value="v", category=Category.decisions, ttl_days=None
-        )
+        entry = ContextEntry(key="k", value="v", category=Category.decisions, ttl_days=None)
         assert entry.is_superseded is False
 
         entry_superseded = ContextEntry(
-            key="k", value="v", category=Category.decisions, ttl_days=None,
+            key="k",
+            value="v",
+            category=Category.decisions,
+            ttl_days=None,
             superseded_by="new-k",
         )
         assert entry_superseded.is_superseded is True
@@ -213,21 +214,28 @@ class TestContextEntry:
         """Test that what_worked/what_failed are rejected for non-decisions/errors categories."""
         with pytest.raises(ValueError, match="only valid for decisions or errors"):
             ContextEntry(
-                key="k", value="v", category=Category.project,
+                key="k",
+                value="v",
+                category=Category.project,
                 what_worked="something",
             )
 
         with pytest.raises(ValueError, match="only valid for decisions or errors"):
             ContextEntry(
-                key="k", value="v", category=Category.tasks,
+                key="k",
+                value="v",
+                category=Category.tasks,
                 what_failed="something",
             )
 
     def test_outcome_fields_allowed_for_decisions(self):
         """Test that what_worked/what_failed are accepted for decisions."""
         entry = ContextEntry(
-            key="k", value="v", category=Category.decisions,
-            what_worked="this", what_failed="that",
+            key="k",
+            value="v",
+            category=Category.decisions,
+            what_worked="this",
+            what_failed="that",
         )
         assert entry.what_worked == "this"
         assert entry.what_failed == "that"
@@ -235,8 +243,11 @@ class TestContextEntry:
     def test_outcome_fields_allowed_for_errors(self):
         """Test that what_worked/what_failed are accepted for errors."""
         entry = ContextEntry(
-            key="k", value="v", category=Category.errors,
-            what_worked="this", what_failed="that",
+            key="k",
+            value="v",
+            category=Category.errors,
+            what_worked="this",
+            what_failed="that",
         )
         assert entry.what_worked == "this"
         assert entry.what_failed == "that"

@@ -41,12 +41,8 @@ class ContextEntry(BaseModel):
     ttl_days: int | None = Field(default=None, description="Days until expiry. None = never.")
     tags: list[str] = Field(default_factory=list)
     source: str = Field(default="agent", description="Who wrote this: agent | human")
-    what_worked: str | None = Field(
-        default=None, description="What worked for this decision/error"
-    )
-    what_failed: str | None = Field(
-        default=None, description="What failed for this decision/error"
-    )
+    what_worked: str | None = Field(default=None, description="What worked for this decision/error")
+    what_failed: str | None = Field(default=None, description="What failed for this decision/error")
     superseded_by: str | None = Field(
         default=None,
         description="Key of the entry that supersedes this one. Recall follows the pointer.",

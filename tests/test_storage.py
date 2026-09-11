@@ -525,7 +525,8 @@ class TestSessionMetric:
         content = (temp_project_dir / "ai-context" / "_session_log.md").read_text()
         # Filter out header lines (table header + separator)
         data_lines = [
-            line for line in content.splitlines()
+            line
+            for line in content.splitlines()
             if line.startswith("|") and "Timestamp" not in line and "---" not in line
         ]
         assert len(data_lines) == 2
