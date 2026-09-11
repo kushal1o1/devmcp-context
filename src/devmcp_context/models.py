@@ -25,10 +25,10 @@ DEFAULT_TTL_DAYS: dict[Category, int | None] = {
 
 CATEGORY_DESCRIPTIONS: dict[Category, str] = {
     Category.project: "Stack, goals, conventions, repo structure",
-    Category.decisions: "Why X was chosen over Y — architectural choices",
+    Category.decisions: "Why X was chosen over Y - architectural choices",
     Category.errors: "Bugs seen, fixes tried, what worked",
     Category.tasks: "In progress, blocked, recently completed",
-    Category.ephemeral: "Scratchpad — auto-expires in 1 day",
+    Category.ephemeral: "Scratchpad - auto-expires in 1 day",
 }
 
 
@@ -41,6 +41,16 @@ class ContextEntry(BaseModel):
     ttl_days: int | None = Field(default=None, description="Days until expiry. None = never.")
     tags: list[str] = Field(default_factory=list)
     source: str = Field(default="agent", description="Who wrote this: agent | human")
+    what_worked: str | None = Field(
+        default=None, description="What worked for this decision/error"
+    )
+    what_failed: str | None = Field(
+        default=None, description="What failed for this decision/error"
+    )
+    superseded_by: str | None = Field(
+        default=None,
+        description="Key of the entry that supersedes this one. Recall follows the pointer.",
+    )
 
     @model_validator(mode="before")
     @classmethod
@@ -52,6 +62,21 @@ class ContextEntry(BaseModel):
                 data["ttl_days"] = DEFAULT_TTL_DAYS.get(category)
         return data
 
+    @model_validator(mode="before")
+    @classmethod
+    def validate_outcome_fields(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            cat = data.get("category")
+            if cat:
+                category = Category(cat) if isinstance(cat, str) else cat
+                has_outcomes = data.get("what_worked") or data.get("what_failed")
+                if has_outcomes and category not in (Category.decisions, Category.errors):
+                    raise ValueError(
+                        f"what_worked/what_failed are only valid for decisions or errors, "
+                        f"not {category.value}"
+                    )
+        return data
+
     @property
     def is_expired(self) -> bool:
         if self.ttl_days is None:
@@ -60,22 +85,49 @@ class ContextEntry(BaseModel):
         return datetime.now(UTC) > expiry
 
     @property
+    def is_superseded(self) -> bool:
+        return self.superseded_by is not None
+
+    @property
     def age_days(self) -> int:
         delta = datetime.now(UTC) - self.updated_at
         return delta.days
 
     def to_md_block(self) -> str:
-        """Render entry as a markdown block with YAML frontmatter-style header."""
-        tags_str = ", ".join(self.tags) if self.tags else ""
+        """Render entry as a markdown block with meta comment."""
+        tags_str = TAG_DELIMITER.join(self.tags) if self.tags else ""
         ttl_str = f"{self.ttl_days}d" if self.ttl_days else "never"
+        meta_parts = [
+            f"created={self.created_at.isoformat()}",
+            f"updated={self.updated_at.isoformat()}",
+            f"ttl={ttl_str}",
+            f"source={self.source}",
+            f"tags={tags_str}",
+        ]
+        if self.what_worked:
+            meta_parts.append(f"what_worked={self.what_worked}")
+        if self.what_failed:
+            meta_parts.append(f"what_failed={self.what_failed}")
+        if self.superseded_by:
+            meta_parts.append(f"superseded_by={self.superseded_by}")
+        meta_str = " ".join(meta_parts)
         lines = [
             f"### {self.key}",
-            f"<!-- meta: created={self.created_at.isoformat()} updated={self.updated_at.isoformat()} ttl={ttl_str} source={self.source} tags={tags_str} -->",
+            f"<!-- meta: {meta_str} -->",
             "",
             self.value,
             "",
         ]
         return "\n".join(lines)
+
+
+def lead_fact(entry: ContextEntry) -> str:
+    """Extract the lead fact from an entry's value - the first non-empty line."""
+    for line in entry.value.splitlines():
+        stripped = line.strip()
+        if stripped:
+            return stripped
+    return entry.value[:80]
 
 
 class CategoryFile(BaseModel):
@@ -96,3 +148,7 @@ class CategoryFile(BaseModel):
             "expired_entries": len(self.entries) - len(active),
             "oldest_days": max((e.age_days for e in active), default=0),
         }
+
+
+# Tag delimiter: | (pipe) instead of , to avoid space ambiguity in meta comments.
+TAG_DELIMITER = "|"

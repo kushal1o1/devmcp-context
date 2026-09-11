@@ -4,9 +4,15 @@ import json
 from pathlib import Path
 
 from .models import CATEGORY_DESCRIPTIONS, Category, ContextEntry
-from .storage import FOLDER_NAME, _category_file_path, _meta_file_path, save_entry
+from .storage import (
+    FOLDER_NAME,
+    _category_file_path,
+    _meta_file_path,
+    _session_log_path,
+    save_entry,
+)
 
-GITIGNORE_NOTE = "# ai-context/ is intentionally tracked — it's your AI's memory\n"
+GITIGNORE_NOTE = "# ai-context/ is intentionally tracked - it's your AI's memory\n"
 
 
 def _detect_project_info(project_root: Path) -> dict[str, str]:
@@ -57,14 +63,29 @@ def _write_meta(project_root: Path) -> None:
         "> Auto-managed by context-mcp. Do not edit manually.\n\n"
         "This folder is your AI's structured memory for this project.\n\n"
         "## Categories\n\n"
-        + "\n".join(f"- **{cat.value}** — {CATEGORY_DESCRIPTIONS[cat]}" for cat in Category)
+        + "\n".join(f"- **{cat.value}** - {CATEGORY_DESCRIPTIONS[cat]}" for cat in Category)
         + "\n\n"
+        "## Entry format\n\n"
+        "- Put the **key fact on the first line** - it's what shows in summaries\n"
+        "- Use `what_worked` and `what_failed` fields for decisions and errors\n"
+        "- Use `superseded_by` to redirect recall to a newer entry instead of deleting\n\n"
         "## How to use\n\n"
         "- Edit any `.md` file directly to add or fix entries\n"
         "- Delete an entry block to remove it\n"
         "- The agent will pick up your changes next session\n",
         encoding="utf-8",
     )
+
+
+def _write_session_log(project_root: Path) -> None:
+    log_path = _session_log_path(project_root)
+    if not log_path.exists():
+        log_path.write_text(
+            "# Session Log\n\n"
+            "| Timestamp | Recall fired before first edit |\n"
+            "|-----------|-------------------------------|\n",
+            encoding="utf-8",
+        )
 
 
 def scaffold(project_root: Path) -> bool:
@@ -127,4 +148,5 @@ def scaffold(project_root: Path) -> bool:
         )
 
     _write_meta(project_root)
+    _write_session_log(project_root)
     return True

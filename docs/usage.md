@@ -13,6 +13,7 @@ your-project/
     tasks.md
     ephemeral.md
     _meta.md
+    _session_log.md   ← session recall metrics
 ```
 
 Each `.md` file contains entries for that category in a human-readable format.
@@ -55,16 +56,57 @@ context_save(
 )
 ```
 
-### With Tags
+### Key Fact First
+
+Put the most important information on the first line. It's what shows in session summaries:
 
 ```python
 context_save(
     category="errors",
     key="timeout-issue",
-    value="API calls timeout after 30 seconds. Solution: increase timeout threshold.",
+    value="API calls timeout after 30s - fix: increase nginx timeout\nRoot cause: missing timeout config in load balancer\nFile: /etc/nginx/upstream.conf, line 42",
     tags=["api", "timeout", "critical"]
 )
 ```
+
+### With Outcome Fields
+
+For `decisions` and `errors`, track what worked and what failed:
+
+```python
+context_save(
+    category="decisions",
+    key="db-choice",
+    value="Chose PostgreSQL over MongoDB for the billing service",
+    tags=["database", "architecture"],
+    what_worked="ACID guarantees, strong JOIN support",
+    what_failed="Heavier than MongoDB for document workloads"
+)
+```
+
+### Superseding Entries
+
+Instead of deleting outdated entries, point to the successor:
+
+```python
+# Save the new entry
+context_save(
+    category="decisions",
+    key="new-auth",
+    value="Switched to OAuth2 with GitHub provider",
+    tags=["auth"]
+)
+
+# Mark the old one as superseded
+context_save(
+    category="decisions",
+    key="old-auth",
+    value="Cookie-based sessions (replaced by OAuth2)",
+    superseded_by="new-auth"
+)
+```
+
+Search and recall skip superseded entries and return the successor instead.
 
 ### Custom TTL
 
@@ -74,17 +116,6 @@ context_save(
     key="refactor-done",
     value="Payment service refactoring completed",
     ttl_days=7  # Override default 14 days
-)
-```
-
-### From Different Sources
-
-```python
-context_save(
-    category="project",
-    key="test-coverage",
-    value="Unit tests cover 85% of the codebase",
-    source="qa"  # Instead of default "agent"
 )
 ```
 
@@ -228,43 +259,48 @@ context_save(
 
 ### Single Agent Session
 
-Start fresh for each session:
+Start each session with auto-recall:
 
 ```python
-context_status()  # See what's available
-context_load("project")  # Load project context
+session = context_session_start()  # Auto-loads memory
+# Read auto-loaded project knowledge
+# Read compact index of other categories
 # ... do work ...
 context_save(...)  # Save new findings
+context_log_session_recall()  # Log whether recall was used
 ```
 
 ### Multi-Session Continuity
 
-Leverage persistent memory:
+Leverage persistent memory and superseded entries:
 
 ```python
 # Session 1
-context_save("errors", "timeout-bug", "Found cause: missing timeout config")
+context_save("decisions", "auth-v1", "Cookie-based sessions")
 
 # Session 2 (days later)
-results = context_search("timeout")  # Still available!
+context_save("decisions", "auth-v2", "Switched to JWT", superseded_by="auth-v1")
+
+# Session 3 - search skips auth-v1, returns auth-v2
+results = context_search("auth")  # Returns auth-v2
 ```
 
-### Conversational Context
+### Outcome Tracking
 
-Use ephemeral category:
+Track what worked and what failed for future reference:
 
 ```python
 context_save(
-    category="ephemeral",
-    key="conversation-state",
-    value="User is analyzing Q3 sales data"
+    category="errors",
+    key="db-pool-fix",
+    value="Connection pool exhausted under load - increased pool size to 50",
+    what_worked="Increased pool size, added connection timeout",
+    what_failed="First tried recycling connections (caused deadlocks)"
 )
 ```
 
-Auto-expires in 1 day, good for temporary session notes.
-
 ## Next Steps
 
-- [API Reference](api.md) — Complete tool documentation
-- [Memory Categories](categories.md) — Deep dive into each category
-- [Deployment](deployment.md) — Integration with agents
+- [API Reference](api.md) - Complete tool documentation
+- [Memory Categories](categories.md) - Deep dive into each category
+- [Deployment](deployment.md) - Integration with agents

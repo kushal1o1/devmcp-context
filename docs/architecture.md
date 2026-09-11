@@ -34,22 +34,31 @@ sequenceDiagram
     participant Server as devmcp-context Server
     participant Storage as ai-context/
     
-    Agent->>Server: save("project", "key", "value")
-    Server->>Storage: Write to project.md
-    Storage-->>Server: ✓ Success
-    Server-->>Agent: {"success": true}
+    Agent->>Server: context_session_start()
+    Server->>Storage: Read project.md + decisions.md
+    Storage-->>Server: Full entries
+    Server->>Storage: Read all .md files for index
+    Storage-->>Server: Summary data
+    Server-->>Agent: Auto-loaded entries + compact index
     
-    Agent->>Server: search("keyword")
+    Note over Agent: Agent reads memory, starts work
+    
+    Agent->>Server: context_save("decisions", "key", "value", what_worked="...", superseded_by="old-key")
+    Server->>Storage: Write to decisions.md
+    Storage-->>Server: Success
+    Server-->>Agent: Saved
+    
+    Agent->>Server: context_search("keyword")
     Server->>Storage: Read all .md files
     Storage-->>Server: Markdown content
-    Server->>Server: Parse & search
+    Server->>Server: Parse, skip superseded, search
     Server-->>Agent: [matching entries]
     
-    Agent->>Server: load("decisions")
-    Server->>Storage: Read decisions.md
-    Storage-->>Server: Markdown content
-    Server->>Server: Parse & filter active
-    Server-->>Agent: [active entries]
+    Note over Agent: Session ends
+    
+    Agent->>Server: context_log_session_recall()
+    Server->>Storage: Append to _session_log.md
+    Server-->>Agent: Logged
 ```
 
 ## Memory Organization
@@ -81,12 +90,14 @@ Each file contains entries in Markdown format. Entries include metadata (TTL, cr
 graph TB
     Server["devmcp-context Server"]
     
-    T1["context_save<br/>(Create/Update)"]
-    T2["context_load<br/>(Retrieve)"]
-    T3["context_search<br/>(Find)"]
-    T4["context_delete<br/>(Remove)"]
-    T5["context_status<br/>(Stats)"]
-    T6["context_purge_expired<br/>(Cleanup)"]
+    T1["context_session_start<br/>(Auto-Recall)"]
+    T2["context_save<br/>(Create/Update)"]
+    T3["context_load<br/>(Retrieve)"]
+    T4["context_search<br/>(Find)"]
+    T5["context_delete<br/>(Remove)"]
+    T6["context_status<br/>(Stats)"]
+    T7["context_purge_expired<br/>(Cleanup)"]
+    T8["context_log_session_recall<br/>(Metric)"]
     
     Server --> T1
     Server --> T2
@@ -94,14 +105,18 @@ graph TB
     Server --> T4
     Server --> T5
     Server --> T6
+    Server --> T7
+    Server --> T8
     
     style Server fill:#60a5fa,color:#0f172a
-    style T1 fill:#e8e8e8
+    style T1 fill:#34d399,color:#0f172a
     style T2 fill:#e8e8e8
     style T3 fill:#e8e8e8
     style T4 fill:#e8e8e8
     style T5 fill:#e8e8e8
     style T6 fill:#e8e8e8
+    style T7 fill:#e8e8e8
+    style T8 fill:#fbbf24,color:#0f172a
 ```
 
 All tools operate on the same file-based storage. No database, no complexity.
@@ -117,7 +132,11 @@ classDiagram
         +int ttl_days
         +datetime created_at
         +datetime updated_at
+        +str what_worked
+        +str what_failed
+        +str superseded_by
         +bool is_expired()
+        +bool is_superseded()
         +int age_days()
     }
     
@@ -139,7 +158,10 @@ classDiagram
     CategoryFile --> ContextEntry
 ```
 
-Each entry is immutable once created. Updates trigger new creation timestamps and regenerate the Markdown file.
+- `created_at` is preserved across updates (not reset)
+- `superseded_by` points to the successor entry; recall skips superseded entries
+- `what_worked` / `what_failed` are only valid for `decisions` and `errors` categories
+- Tags use pipe `|` as delimiter in markdown files (not comma)
 
 ## Deployment Models
 

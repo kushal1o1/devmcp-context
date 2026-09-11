@@ -10,19 +10,20 @@
 
 Structured AI memory layer. A single source of truth for what your agent knows across conversations.
 
-`devmcp-context` is a Model Context Protocol (MCP) server that provides persistent, organized memory for AI agents. Your agent's memory is now **visible, editable, and searchable** — without retraining.
+`devmcp-context` is a Model Context Protocol (MCP) server that provides persistent, organized memory for AI agents. Your agent's memory is now **visible, editable, and searchable** - without retraining.
 
 Published on PyPI: [https://pypi.org/project/devmcp-context/](https://pypi.org/project/devmcp-context/)
 
 ## The Problem
 
-AI agents are black boxes. You can't see what they remember. When they forget something important or remember something wrong, you're stuck.
+AI agents are black boxes. You can't see what they remember. When they forget something important or remembers something wrong, you're stuck.
 
 **devmcp-context changes this.** Your agent's memory is now:
-- **Visible** — Plain text files in your project folder
-- **Editable** — Change any entry, agent sees it immediately  
-- **Structured** — Organized into 5 categories with automatic cleanup
-- **Persistent** — Survives across agent sessions and restarts
+- **Visible** - Plain text files in your project folder
+- **Editable** - Change any entry, agent sees it immediately  
+- **Structured** - Organized into 5 categories with automatic cleanup
+- **Persistent** - Survives across agent sessions and restarts
+- **Recall-first** - Memory loads automatically at session start
 
 ## Installation
 
@@ -38,21 +39,39 @@ uv add devmcp-context
 
 ## Quick Start
 
-Register in your agent's MCP config (Claude, Node.js, Python, Docker), then:
-
 ```bash
-devmcp-context
+cd your-project
+devmcp-context init
 ```
 
-Your agent will auto-discover the memory server. Start asking questions, and memories are saved to `ai-context/` folder.
+That's it. This scaffolds `ai-context/` and configures your MCP client automatically. Supports opencode, Cursor, and Claude Desktop - auto-detected from your project.
+
+For multiple projects, run `init` in each project directory. Each gets its own config entry:
+
+```bash
+cd ~/projects/todo-app && devmcp-context init
+cd ~/projects/blog && devmcp-context init
+```
+
+**Manual setup** (if auto-detection doesn't work):
+
+```bash
+devmcp-context init --client opencode   # or cursor, claude
+devmcp-context init --name my-context   # custom entry name
+```
 
 ## Features
 
+- **Auto-recall at session start** - project + decisions memory loaded automatically, compact index of everything else
 - 5 memory categories (project, decisions, errors, tasks, ephemeral)
-- Automatic expiration (TTL) — errors expire in 30 days, tasks in 14
+- **Outcome tracking** - `what_worked` and `what_failed` fields for decisions and errors
+- **Superseded entries** - redirect recall to newer entries instead of deleting history
+- **Key fact first** - entry summaries lead with the most important line
+- Automatic expiration (TTL) - errors expire in 30 days, tasks in 14
 - Full-text search across all entries
 - Tagging system for organization
 - Persistent file-based storage (no database)
+- Session recall metric - tracks whether memory was used before edits
 - MCP-compliant server
 
 ## Documentation
@@ -61,7 +80,7 @@ Full docs: [https://kushal1o1.github.io/devmcp-context/](https://kushal1o1.githu
 
 - Getting Started guide
 - Installation instructions
-- API Reference (6 tools)
+- API Reference (8 tools)
 - Memory categories explained
 - Architecture diagrams (Mermaid)
 - Deployment guide
@@ -72,19 +91,28 @@ Full docs: [https://kushal1o1.github.io/devmcp-context/](https://kushal1o1.githu
 In your agent prompt:
 
 ```
+Agent calls context_session_start first to load memory.
+
 Use context_save to remember insights:
-- save("decisions", "auth_strategy", "Use JWT with refresh tokens", tags=["security"])
+- save("decisions", "auth_strategy", "Use JWT with refresh tokens",
+       tags=["security"],
+       what_worked="Stateless, scales horizontally",
+       what_failed="Token refresh is complex")
 
 Use context_load to retrieve memories:
 - load("decisions")
 
 Use context_search to find specific memories:
 - search("JWT")
+
+Use superseded_by to redirect old entries:
+- save("decisions", "new-auth", "Switched to OAuth2",
+       superseded_by="old-auth")
 ```
 
 ## License
 
-MIT — See [LICENSE](LICENSE) for details.
+MIT - See [LICENSE](LICENSE) for details.
 
 ## Contributing
 

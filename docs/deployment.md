@@ -11,7 +11,7 @@ When you configure devmcp-context in Claude Desktop:
 4. When you close the chat or exit Claude, the server stops
 5. Next time you chat, it starts fresh with any previously saved memories
 
-**You don't manually run the server** — Claude handles startup and shutdown for you.
+**You don't manually run the server** - Claude handles startup and shutdown for you.
 
 ```mermaid
 graph TB

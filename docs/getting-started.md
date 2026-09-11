@@ -4,7 +4,7 @@
 
 AI agents work in a black box. You don't see what they remember. You can't edit their memories when they're wrong. You can't fix a mistaken belief without restarting from scratch.
 
-**devmcp-context solves this.** Your agent's memory is now visible, editable, and persistent — stored as plain Markdown files in your project folder.
+**devmcp-context solves this.** Your agent's memory is now visible, editable, and persistent - stored as plain Markdown files in your project folder.
 
 ## How It Works
 
@@ -38,148 +38,85 @@ graph LR
 ## Step 1: Install devmcp-context
 
 ```bash
-# Clone the repository
-git clone https://github.com/kushal1o1/devmcp-context.git
-cd devmcp-context
-
-# Install dependencies
-uv sync
+pip install devmcp-context
+# or
+uv add devmcp-context
 ```
 
-This creates a virtual environment and installs everything needed.
+## Step 2: Initialize your project
 
-## Step 2: Understand Path Resolution
-
-When devmcp-context starts, it determines where to store memory using this priority:
-
-1. **Environment variable** — If `CONTEXT_MCP_PROJECT_ROOT` is set, use that path
-2. **Working directory** — Otherwise, use the current working directory (`cwd`)
-
-The `cwd` is set by your MCP configuration. Memory files are always stored in `{resolved_path}/ai-context/`.
-
-```mermaid
-graph TD
-    Start["Server Starts"]
-    EnvSet{"CONTEXT_MCP_PROJECT_ROOT<br/>set?"}
-    UseEnv["Use env var path"]
-    UseCwd["Use cwd from<br/>MCP config"]
-    Resolve["Resolve Path"]
-    Store["Store in<br/>{path}/ai-context/"]
-    
-    Start --> EnvSet
-    EnvSet -->|Yes| UseEnv
-    EnvSet -->|No| UseCwd
-    UseEnv --> Resolve
-    UseCwd --> Resolve
-    Resolve --> Store
-    
-    style Start fill:#f0f0f0
-    style EnvSet fill:#ffe8e8
-    style UseEnv fill:#e8f0ff
-    style UseCwd fill:#e8f0ff
-    style Resolve fill:#f0f0f0
-    style Store fill:#e8e8ff
-```
-
-### When to Use `CONTEXT_MCP_PROJECT_ROOT`
-
-**Use it when:**
-- Running devmcp-context manually for testing/development and need to override the working directory
-- Custom agents that need to point to a different memory location at runtime
-- Container deployments where the working directory doesn't match your project path
-
-**Don't use it for multiple projects** — Instead, register multiple servers with different `cwd` values (see [Using Multiple Projects](#using-multiple-projects) section).
-
-### Example Path Resolution
-
-If you configure:
-```json
-"cwd": "/home/user/my-project"
-```
-
-Then memory lives in:
-```
-/home/user/my-project/ai-context/
-```
-
-To override at runtime (rare):
 ```bash
-export CONTEXT_MCP_PROJECT_ROOT="/custom/path"
-# Then start your agent
+cd your-project
+devmcp-context init
 ```
 
-Memory will go to `/custom/path/ai-context/` instead.
+This single command:
+
+1. Creates `ai-context/` with category files
+2. Detects your MCP client (opencode, Cursor, Claude Desktop)
+3. Writes the config with correct paths
+4. Handles multi-project setups automatically
+
+**That's it.** Restart your MCP client and the tools are available.
 
 ## Step 3: Register with Your Agent
 
-### Claude Desktop
+### Using `devmcp-context init` (recommended)
 
-Add to your Claude config file:
+The init command handles registration for you:
 
-**Config file location:**
-- **macOS/Linux:** `~/.config/Claude/claude_desktop_config.json`
-- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+```bash
+cd your-project
+devmcp-context init                    # auto-detect client
+devmcp-context init --client opencode  # force specific client
+devmcp-context init --client cursor    # force specific client
+devmcp-context init --client claude    # force specific client
+```
 
-**Config content:**
+### Manual Setup
+
+If you prefer to edit config files directly:
+
+**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 ```json
 {
   "mcpServers": {
-    "devmcp-context": {
+    "context": {
       "command": "uv",
-      "args": ["run", "--", "devmcp-context"],
-      "cwd": "/absolute/path/to/your/project"
+      "args": ["--directory", "/path/to/context-mcp", "run", "context-mcp"],
+      "env": { "CONTEXT_MCP_PROJECT_ROOT": "/path/to/your/project" }
     }
   }
 }
 ```
 
-Replace `/absolute/path/to/your/project` with your actual project path (must be absolute).
-
-**Examples:**
+**opencode** (`opencode.json` in project root):
 ```json
 {
-  "mcpServers": {
-    "devmcp-context": {
-      "command": "uv",
-      "args": ["run", "--", "devmcp-context"],
-      "cwd": "/Users/alice/projects/my-app"
+  "mcp": {
+    "context": {
+      "type": "local",
+      "command": ["uv", "--directory", "/path/to/context-mcp", "run", "context-mcp"],
+      "cwd": ".",
+      "enabled": true
     }
   }
 }
 ```
 
-### Other MCP Agents
-
-Any agent supporting MCP can use devmcp-context. Register it similarly:
-
-**For Node.js/JavaScript agents:**
+**Cursor** (`.cursor/mcp.json` in project root):
 ```json
 {
   "mcpServers": {
-    "devmcp-context": {
+    "context": {
       "command": "uv",
-      "args": ["run", "--", "devmcp-context"],
-      "cwd": "/path/to/your/project"
+      "args": ["--directory", "/path/to/context-mcp", "run", "context-mcp"]
     }
   }
 }
 ```
 
-**For Python agents (direct):**
-```python
-import subprocess
-from pathlib import Path
-
-# Start devmcp-context
-server = subprocess.Popen(
-    ["uv", "run", "devmcp-context"],
-    cwd="/path/to/your/project"
-)
-
-# Now connect to the MCP server and use its tools
-```
-
-**For Docker/Container deployment:**
+**Docker/Container:**
 ```bash
 docker run -d \
   -v /path/to/project:/project \
@@ -251,26 +188,33 @@ Expired entries are kept until you run `context_purge_expired`.
 
 ## Using Multiple Projects
 
-Each project gets independent memory. Register multiple servers in your agent config:
+Each project gets independent memory. Run `init` in each project:
+
+```bash
+cd ~/projects/project-a && devmcp-context init
+cd ~/projects/project-b && devmcp-context init
+```
+
+Each gets a unique entry name. For Claude Desktop, the config looks like:
 
 ```json
 {
   "mcpServers": {
-    "devmcp-context-project-a": {
+    "context-project-a": {
       "command": "uv",
-      "args": ["run", "--", "devmcp-context"],
-      "cwd": "/path/to/project-a"
+      "args": ["--directory", "/path/to/context-mcp", "run", "context-mcp"],
+      "env": { "CONTEXT_MCP_PROJECT_ROOT": "/path/to/project-a" }
     },
-    "devmcp-context-project-b": {
+    "context-project-b": {
       "command": "uv",
-      "args": ["run", "--", "devmcp-context"],
-      "cwd": "/path/to/project-b"
+      "args": ["--directory", "/path/to/context-mcp", "run", "context-mcp"],
+      "env": { "CONTEXT_MCP_PROJECT_ROOT": "/path/to/project-b" }
     }
   }
 }
 ```
 
-Each server starts with its own `cwd` and maintains separate `ai-context/` folders automatically. **No env var switching needed** — just ask your agent to use `devmcp_context_project_a` or `devmcp_context_project_b` memory tools as needed.
+For opencode/Cursor, each project gets its own config file with `cwd: "."` - no env var needed.
 
 ## Troubleshooting
 
@@ -297,7 +241,7 @@ Each server starts with its own `cwd` and maintains separate `ai-context/` folde
 
 - The `cwd` in MCP config is where the server starts
 - Memory lives in `{cwd}/ai-context/`
-- Use absolute paths only — no `~`, no relative paths like `./project`
+- Use absolute paths only - no `~`, no relative paths like `./project`
 - To override, set `CONTEXT_MCP_PROJECT_ROOT` environment variable
 
 ## Next Steps

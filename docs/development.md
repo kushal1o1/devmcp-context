@@ -317,7 +317,7 @@ Dev dependencies:
 
 Uses semantic versioning (MAJOR.MINOR.PATCH).
 
-Current version: 0.1.0 (alpha)
+Current version: v0.2.0
 
 Bump version in `pyproject.toml` for releases.
 
