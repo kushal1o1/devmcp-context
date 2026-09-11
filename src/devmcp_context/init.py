@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import platform
-import shutil
 from pathlib import Path
 
 from .scaffold import scaffold
@@ -70,11 +69,6 @@ def _resolve_context_mcp_path() -> Path | None:
         pass
 
     return None
-
-
-def _is_global_install() -> bool:
-    """Check if devmcp-context is installed globally (pipx, pip, etc.)."""
-    return shutil.which("devmcp-context") is not None
 
 
 def _find_context_entries(config: dict, client: str) -> dict[str, dict]:
