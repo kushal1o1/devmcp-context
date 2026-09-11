@@ -12,7 +12,7 @@ from .storage import (
     save_entry,
 )
 
-GITIGNORE_NOTE = "# ai-context/ is intentionally tracked — it's your AI's memory\n"
+GITIGNORE_NOTE = "# ai-context/ is intentionally tracked - it's your AI's memory\n"
 
 
 def _detect_project_info(project_root: Path) -> dict[str, str]:
@@ -63,10 +63,10 @@ def _write_meta(project_root: Path) -> None:
         "> Auto-managed by context-mcp. Do not edit manually.\n\n"
         "This folder is your AI's structured memory for this project.\n\n"
         "## Categories\n\n"
-        + "\n".join(f"- **{cat.value}** — {CATEGORY_DESCRIPTIONS[cat]}" for cat in Category)
+        + "\n".join(f"- **{cat.value}** - {CATEGORY_DESCRIPTIONS[cat]}" for cat in Category)
         + "\n\n"
         "## Entry format\n\n"
-        "- Put the **key fact on the first line** — it's what shows in summaries\n"
+        "- Put the **key fact on the first line** - it's what shows in summaries\n"
         "- Use `what_worked` and `what_failed` fields for decisions and errors\n"
         "- Use `superseded_by` to redirect recall to a newer entry instead of deleting\n\n"
         "## How to use\n\n"

@@ -203,7 +203,7 @@ def _follow_superseded(
 def search_all(project_root: Path, query: str) -> list[ContextEntry]:
     """Simple case-insensitive search across all active entries.
 
-    Superseded entries are skipped — their successors are returned instead.
+    Superseded entries are skipped - their successors are returned instead.
     """
     query_lower = query.lower()
     results: list[ContextEntry] = []

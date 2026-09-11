@@ -25,10 +25,10 @@ DEFAULT_TTL_DAYS: dict[Category, int | None] = {
 
 CATEGORY_DESCRIPTIONS: dict[Category, str] = {
     Category.project: "Stack, goals, conventions, repo structure",
-    Category.decisions: "Why X was chosen over Y — architectural choices",
+    Category.decisions: "Why X was chosen over Y - architectural choices",
     Category.errors: "Bugs seen, fixes tried, what worked",
     Category.tasks: "In progress, blocked, recently completed",
-    Category.ephemeral: "Scratchpad — auto-expires in 1 day",
+    Category.ephemeral: "Scratchpad - auto-expires in 1 day",
 }
 
 
@@ -122,7 +122,7 @@ class ContextEntry(BaseModel):
 
 
 def lead_fact(entry: ContextEntry) -> str:
-    """Extract the lead fact from an entry's value — the first non-empty line."""
+    """Extract the lead fact from an entry's value - the first non-empty line."""
     for line in entry.value.splitlines():
         stripped = line.strip()
         if stripped:
