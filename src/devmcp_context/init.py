@@ -40,7 +40,13 @@ def _claude_desktop_config_path() -> Path | None:
     """Get the Claude Desktop config file path for the current platform."""
     system = platform.system()
     if system == "Darwin":
-        return Path.home() / "Library" / "Application Support" / "Claude" / "claude_desktop_config.json"
+        return (
+            Path.home()
+            / "Library"
+            / "Application Support"
+            / "Claude"
+            / "claude_desktop_config.json"
+        )
     elif system == "Windows":
         appdata = Path.home() / "AppData" / "Roaming"
         return appdata / "Claude" / "claude_desktop_config.json"
@@ -172,9 +178,7 @@ def _build_claude_entry(context_mcp_path: Path | None, project_root: Path) -> di
     }
 
 
-def _build_entry(
-    client: str, context_mcp_path: Path | None, project_root: Path
-) -> dict:
+def _build_entry(client: str, context_mcp_path: Path | None, project_root: Path) -> dict:
     """Build the appropriate config entry for the given client."""
     if client == "opencode":
         return _build_opencode_entry(context_mcp_path, project_root)
@@ -223,10 +227,10 @@ def _generate_generic_snippet(context_mcp_path: Path | None, project_root: Path)
             "#\n"
             '# For clients using the "command + args" format:\n'
             f"#   command: uv\n"
-            f"#   args: [\"--directory\", \"{context_mcp_path}\", \"run\", \"context-mcp\"]\n"
+            f'#   args: ["--directory", "{context_mcp_path}", "run", "context-mcp"]\n'
             f"#\n"
             f'# For clients using the "command array" format:\n'
-            f"#   command: [\"uv\", \"--directory\", \"{context_mcp_path}\", \"run\", \"context-mcp\"]\n"
+            f'#   command: ["uv", "--directory", "{context_mcp_path}", "run", "context-mcp"]\n'
             f"#\n"
             f"# The server will use {project_root} as the project root.\n"
             f"# If your client sets cwd to the project dir, no env var is needed.\n"

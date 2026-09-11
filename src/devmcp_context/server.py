@@ -93,19 +93,13 @@ def context_session_start() -> dict:
     return {
         "project_root": str(root),
         "auto_loaded": {
-            "project": [
-                {"key": e.key, "value": e.value, "tags": e.tags}
-                for e in project_entries
-            ],
+            "project": [{"key": e.key, "value": e.value, "tags": e.tags} for e in project_entries],
             "decisions": [
-                {"key": e.key, "value": e.value, "tags": e.tags}
-                for e in decisions_entries
+                {"key": e.key, "value": e.value, "tags": e.tags} for e in decisions_entries
             ],
         },
         "compact_index": {
-            cat: entries
-            for cat, entries in index.items()
-            if cat not in ("project", "decisions")
+            cat: entries for cat, entries in index.items() if cat not in ("project", "decisions")
         },
         "tip": (
             "Read the auto-loaded entries above. Use context_load(category=...) "
